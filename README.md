@@ -58,6 +58,8 @@ PYTHONPATH=. .venv/bin/python -m src.cli.main "https://www.youtube.com/watch?v=e
 | `--model-size`                     | `base`   | Whisper model size (`tiny`, `base`, `small`, `medium`, `large`). Larger models are more accurate but slower. |
 | `--llm-provider`                   | `ollama` | LLM provider to use: `ollama` (local) or `openai` (cloud).                                                   |
 | `--llm-model`                      | `llama3` | Model name to use (e.g., `llama3` for Ollama, `gpt-4o` for OpenAI).                                          |
+| `--translate`                      | `False`  | Translate audio to English (using Whisper).                                                                  |
+| `--target-language`                | `None`   | Translate transcript to this language (using LLM). Overrides `--translate`.                                  |
 | `--embed-subs` / `--no-embed-subs` | `True`   | Whether to embed the generated subtitles into the video.                                                     |
 
 ### Examples

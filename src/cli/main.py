@@ -7,7 +7,8 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 from src.core.downloader import VideoDownloader
 from src.core.audio import AudioProcessor
 from src.core.transcriber import Transcriber
-from src.core.summarizer import OllamaSummarizer, OpenAISummarizer
+from src.core.summarizer import Summarizer
+from src.core.llm import OllamaClient, OpenAIClient
 
 app = typer.Typer()
 console = Console()
@@ -19,6 +20,8 @@ def process(
     model_size: str = typer.Option("base", help="Whisper model size"),
     llm_provider: str = typer.Option("ollama", help="LLM provider (ollama or openai)"),
     llm_model: str = typer.Option("llama3", help="LLM model name"),
+    translate: bool = typer.Option(False, help="Translate audio to English (using Whisper)"),
+    target_language: str = typer.Option(None, help="Target language for translation (using LLM). Overrides --translate."),
     embed_subs: bool = typer.Option(True, help="Embed subtitles into video"),
 ):
     """
@@ -40,11 +43,15 @@ def process(
         audio_path = audio_processor.extract_audio(video_path)
     console.print(f"[green]Audio extracted:[/green] {audio_path}")
 
-    # 3. Transcribe
+    # 3. Transcribe/Translate (Whisper)
+    # If target_language is set, we just transcribe first (unless it's English, but let's keep it simple).
+    # If translate flag is set (and no target_language), we use Whisper's translate (to English).
+    whisper_task = "translate" if translate and not target_language else "transcribe"
+
     with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"), transient=True) as progress:
-        progress.add_task(description="Transcribing audio...", total=None)
+        progress.add_task(description=f"{whisper_task.capitalize().rstrip('e')}ing audio (Whisper)...", total=None)
         transcriber = Transcriber(model_size=model_size)
-        result = transcriber.transcribe(audio_path)
+        result = transcriber.transcribe(audio_path, task=whisper_task)
 
         # Save SRT
         base, _ = os.path.splitext(video_path)
@@ -52,17 +59,37 @@ def process(
         transcriber.save_srt(result, srt_path)
     console.print(f"[green]Transcription saved:[/green] {srt_path}")
 
-    # 4. Summarize
+    # Initialize LLM Client
+    if llm_provider == "openai":
+        api_key = os.getenv("OPENAI_API_KEY")
+        llm_client = OpenAIClient(api_key=api_key, model=llm_model)
+    else:
+        llm_client = OllamaClient(model=llm_model)
+
+    # 4. LLM Translation (if requested)
+    transcript_text = result["text"]
+
+    if target_language:
+        with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"), transient=True) as progress:
+            progress.add_task(description=f"Translating to {target_language}...", total=None)
+            # We need a Translator class or just do it inline for now.
+            # Let's do it inline to fix the build first, then refactor.
+            prompt = f"Translate the following text to {target_language}:\n\n{transcript_text}"
+            translated_text = llm_client.generate(prompt, system_prompt=f"You are a professional translator. Translate the text to {target_language}.")
+
+            # Update transcript text for summarization
+            transcript_text = translated_text
+
+            # Save translated text
+            trans_path = f"{base}_{target_language}.txt"
+            with open(trans_path, "w") as f:
+                f.write(translated_text)
+        console.print(f"[green]Translation saved:[/green] {trans_path}")
+
+    # 5. Summarize
     with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"), transient=True) as progress:
         progress.add_task(description="Summarizing transcript...", total=None)
-        transcript_text = result["text"]
-
-        if llm_provider == "openai":
-            api_key = os.getenv("OPENAI_API_KEY")
-            summarizer = OpenAISummarizer(api_key=api_key, model=llm_model)
-        else:
-            summarizer = OllamaSummarizer(model=llm_model)
-
+        summarizer = Summarizer(llm_client)
         summary = summarizer.summarize(transcript_text)
 
         summary_path = f"{base}_summary.txt"
