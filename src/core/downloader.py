@@ -18,7 +18,7 @@ class VideoDownloader:
             'outtmpl': os.path.join(self.output_dir, '%(title)s.%(ext)s'),
             'noplaylist': True,
             # Allow downloading remote components to solve challenges (e.g. 'n' parameter)
-            'remote_components': 'ejs:github',
+            'remote_components': ['ejs:github'],
         }
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:

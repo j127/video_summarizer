@@ -13,21 +13,28 @@ from src.core.llm import OllamaClient, OpenAIClient
 app = typer.Typer()
 console = Console()
 
+from src.cli.interactive import interactive_mode
+
 @app.command()
 def process(
-    url: str = typer.Argument(..., help="URL of the video to process"),
+    url: Optional[str] = typer.Argument(None, help="URL of the video to process"),
     output_dir: str = typer.Option("output", help="Directory to save outputs"),
-    model_size: str = typer.Option("base", help="Whisper model size"),
+    model_size: str = typer.Option("base", help="Whisper model size (tiny, base, small, medium, large)"),
     llm_provider: str = typer.Option("ollama", help="LLM provider (ollama or openai)"),
     llm_model: str = typer.Option("llama3", help="LLM model name"),
-    translate: bool = typer.Option(False, help="Translate audio to English (using Whisper)"),
-    target_language: str = typer.Option(None, help="Target language for translation (using LLM). Overrides --translate."),
-    embed_subs: bool = typer.Option(True, help="Embed subtitles into video"),
+    translate: bool = typer.Option(False, help="Translate to English using Whisper"),
+    target_language: Optional[str] = typer.Option(None, help="Target language for translation (using LLM)"),
+    embed_subs: bool = typer.Option(False, help="Embed subtitles into the video"),
 ):
     """
-    Download, transcribe, summarize, and optionally embed subtitles for a video.
+    Process a video: Download -> Transcribe -> Summarize -> Translate (optional).
+    If no URL is provided, enters interactive mode.
     """
-    console.print(f"[bold green]Processing video from:[/bold green] {url}")
+    if url is None:
+        interactive_mode()
+        return
+
+    console.print(f"[bold green]Processing video:[/bold green] {url}")
 
     # 1. Download
     with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"), transient=True) as progress:

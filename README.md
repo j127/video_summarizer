@@ -1,5 +1,7 @@
 # Video Summarizer
 
+<mark>WARNING:</mark> This tool is a work in progress and may not work as expected. It's designed for personal use and testing purposes only.
+
 A powerful CLI tool to download, transcribe, summarize, and translate videos. It leverages `yt-dlp` for downloading, `ffmpeg` for audio processing, `OpenAI Whisper` for transcription, and LLMs (Ollama or OpenAI) for summarization.
 
 ## Features
@@ -42,12 +44,34 @@ Before running the tool, ensure you have the following installed:
 
 The tool is run via the CLI. You can execute it using `uv` or directly with the virtual environment's Python.
 
-### Basic Usage
+### Interactive Mode
 
-Process a video URL (Download -> Transcribe -> Summarize -> Embed Subs):
+To run the interactive CLI, simply run the command without any arguments:
 
 ```bash
-PYTHONPATH=. .venv/bin/python -m src.cli.main "https://www.youtube.com/watch?v=example"
+video-summarizer
+```
+
+This will launch an interactive wizard where you can:
+
+1.  Enter the video URL.
+2.  Select the actions you want to perform (Download, Extract Audio, Transcribe, Summarize, Translate, Embed Subtitles).
+3.  Configure options like model size and target language.
+
+## CLI Usage
+
+You can also run the tool in non-interactive mode by providing arguments:
+
+```bash
+video-summarizer "https://www.youtube.com/watch?v=..." --model-size base --llm-provider ollama
+```
+
+### TUI Usage
+
+Launch the interactive Terminal User Interface:
+
+```bash
+PYTHONPATH=. .venv/bin/python -m src.tui.app
 ```
 
 ### Options
