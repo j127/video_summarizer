@@ -1,8 +1,8 @@
 # Video Summarizer
 
-<mark>WARNING:</mark> This tool is a work in progress and may not work as expected. It's designed for personal use and testing purposes only.
+<mark>WARNING:</mark> This tool is a work in progress and may not work as expected (or even at all). It's designed for personal use and testing purposes only.
 
-A powerful CLI tool to download, transcribe, summarize, and translate videos. It leverages `yt-dlp` for downloading, `ffmpeg` for audio processing, `OpenAI Whisper` for transcription, and LLMs (Ollama or OpenAI) for summarization.
+A CLI tool to download, transcribe, summarize, and translate videos. It leverages `yt-dlp` for downloading, `ffmpeg` for audio processing, `OpenAI Whisper` for transcription, and LLMs (Ollama or OpenAI) for summarization.
 
 ## Features
 
