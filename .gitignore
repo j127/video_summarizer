@@ -1,3 +1,7 @@
+downloads/*
+!downloads/.keep
+output/*
+!output/.keep
 .env
 .envrc
 

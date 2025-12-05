@@ -4,4 +4,11 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "ffmpeg-python>=0.2.0",
+    "ollama>=0.6.1",
+    "openai-whisper>=20250625",
+    "rich>=14.2.0",
+    "typer>=0.20.0",
+    "yt-dlp>=2025.11.12",
+]
